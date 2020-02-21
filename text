@@ -1,1 +1,85 @@
 
+using System;
+using Microsoft.Xrm.Sdk.Metadata;
+using Microsoft.Crm.Services.Utility;
+using System.Xml.Linq;
+using System.Collections.Generic;
+
+namespace Austrade.Tools.CrmExtentions
+{
+    public class CodeWriterFilter : ICodeWriterFilterService
+    {
+        //list of entity names to generate classes for.
+        private HashSet<string> _validEntities = new HashSet<string>();
+
+        //reference to the default service.
+        private ICodeWriterFilterService _defaultService = null;
+
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="defaultService">default implementation</param>
+        public CodeWriterFilter(ICodeWriterFilterService defaultService)
+        {
+            this._defaultService = defaultService;
+            LoadFilterData();
+        }
+
+        /// <summary>
+        /// loads the entity filter data from the filter.xml file
+        /// </summary>
+        private void LoadFilterData()
+        {
+            XElement xml = XElement.Load("filter.xml");
+            XElement entitiesElement = xml.Element("entities");
+            foreach (XElement entityElement in entitiesElement.Elements("entity"))
+            {
+                _validEntities.Add(entityElement.Value.ToLowerInvariant());
+            }
+        }
+
+        /// <summary>
+        /// /Use filter entity list to determine if the entity class should be generated.
+        /// </summary>
+        public bool GenerateEntity(EntityMetadata entityMetadata, IServiceProvider services)
+        {
+            return (_validEntities.Contains(entityMetadata.LogicalName.ToLowerInvariant()));
+        }
+
+        //All other methods just use default implementation:
+
+        public bool GenerateAttribute(AttributeMetadata attributeMetadata, IServiceProvider services)
+        {
+            return _defaultService.GenerateAttribute(attributeMetadata, services);
+        }
+
+        public bool GenerateOption(OptionMetadata optionMetadata, IServiceProvider services)
+        {
+            return _defaultService.GenerateOption(optionMetadata, services);
+        }
+
+        public bool GenerateOptionSet(OptionSetMetadataBase optionSetMetadata, IServiceProvider services)
+        {
+            var res = _defaultService.GenerateOptionSet(optionSetMetadata, services);
+            if(!res)
+            {
+                if (optionSetMetadata.Name!=null && 
+                    (optionSetMetadata.Name.ToLower().EndsWith("_statuscode") || optionSetMetadata.Name.ToLower().StartsWith("aus_")))
+                    res = true;
+            }
+            return res;
+        }
+
+        public bool GenerateRelationship(RelationshipMetadataBase relationshipMetadata, EntityMetadata otherEntityMetadata, IServiceProvider services)
+        {
+            //return _defaultService.GenerateRelationship(relationshipMetadata, otherEntityMetadata, services);
+            return false;
+        }
+
+        public bool GenerateServiceContext(IServiceProvider services)
+        {
+            //return _defaultService.GenerateServiceContext(services);
+            return false;
+        }
+    }
+}
