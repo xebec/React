@@ -1,0 +1,164 @@
+import * as React from "react"
+import { useState } from "react";
+
+export interface AccordionOpenControlProps {
+    onChange: { (expandAllState: boolean): any }
+    className?: string
+    iconClassName?:string
+}
+
+
+export interface AccordionOpenControlState {
+    expanded: boolean
+}
+
+export class AccordionOpenControl extends React.Component<AccordionOpenControlProps, AccordionOpenControlState> {
+
+    constructor(props: AccordionOpenControlProps) {
+        super(props);
+
+        this.state = {
+            expanded: false
+        }
+
+    }
+
+    handleClick = () => {
+        this.setState(prevState => ({
+            expanded: !prevState.expanded
+        }), () => { this.props.onChange(this.state.expanded) });
+    }
+
+    render() {
+        return <>
+            <div className={`accordion-open-control c-padding-top c-padding-bottom accordion-group anchor-section-full-width col-sm-12`}>
+                <div className="accordion-header">
+                    <div className="row">
+                        <div className="col-md-3 offset-md-9 pr-1">
+                            <div className={`open-all-icon float-right  ${this.props.iconClassName}`}>
+                                <span className="fas fa-chevron-up" style={{ display: this.state.expanded ? 'block' : 'none' }}></span>
+                                <span className="fas fa-chevron-down" style={{ display: !this.state.expanded? 'block':'none' }}></span>
+                            </div>
+                            <a href="javascript:void(0)" className="open-all-button float-right mr-2" onClick={() => this.handleClick()}>
+                                <h5 style={{ display: !this.state.expanded ? 'block' : 'none' }}>Open all</h5>
+                                <h5 style={{ display: this.state.expanded ? 'block' : 'none' }}>Close all</h5>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    }
+}
+
+export interface AccordionControlProps {
+    id?: string
+    title: string
+    subTitle?:string
+    className?: string
+    expanded: boolean
+    checkboxState?: 'active' | 'inactive'
+    checkStateVisible?: boolean
+}
+
+export interface AccordionControlState {
+    expanded: boolean
+    focused:boolean
+}
+
+export class AccordionControl extends React.Component<AccordionControlProps, AccordionControlState> {
+
+    constructor(props: AccordionControlProps) {
+        super(props);
+
+        this.state = {
+            expanded:this.props.expanded,
+            focused:false
+        }
+
+    }
+
+    componentDidMount() {
+    }
+
+    componentDidUpdate(prevProps: AccordionControlProps) {
+        if (this.props.expanded != prevProps.expanded) {
+            this.setState({ expanded: this.props.expanded })
+        }
+    }
+
+
+    handleClick =()=> {
+        this.setState(prevState => ({
+            expanded: !prevState.expanded
+        }));
+    }
+
+    bannerStyle = () => {
+        return {
+            borderBottom: this.state.expanded || this.state.focused ? '4px solid #ffd964' : '0px',
+            transition: 'height 0.2s ease 0s'
+        }
+    }
+
+    headerStyle = () => {
+        return {
+            textDecoration: this.state.focused ? 'underline' : ''
+        }
+    }
+
+    buttonStyle = () => {
+        return {
+            backgroundColor: this.state.focused ? '#ffd964' : '',
+            boxShadow: this.state.focused ? '0 0.25rem 0.5rem rgba(0,0,0,.2)' : '',
+        }
+    }
+
+    holderStyle = () => {
+        return {
+            backgroundColor: this.state.expanded ? '#ebebeb' : '#fff',
+        }
+    }
+
+
+
+    
+
+    render() {
+
+        return <>
+            <div className={`accordion-holder c-padding-top c-padding-bottom accordion-group anchor-section-full-width col-sm-12 ${this.props.className}`} style={this.holderStyle()}>
+                <div className="accordion-header" onClick={this.handleClick} onMouseEnter={() => this.setState({ focused: true })} onMouseLeave={() => this.setState({ focused: false })}>
+                    <div className="row">
+                        <div className={`col-md-1 col-3 text-left ${!this.props.checkStateVisible ? 'd-none' : ''}`}>
+                            <button className={`float-button `}>
+                                <div className={`check-button-content ${this.state.expanded?'expanded':'collapsed'} ${this.props.checkboxState}`}>
+                                    <span className="fas fa-check"></span>
+                                </div>
+                            </button>
+                        </div>
+                        <div className={`${this.props.checkStateVisible ? 'col-md-10' :'col-md-11'} col-7 text-left mt-2`}>
+                            <h5 style={this.headerStyle()}>{this.props.title}</h5>
+                            {this.props.subTitle && this.props.subTitle != '' ? <div dangerouslySetInnerHTML={{__html: this.props.subTitle }}></div>:''}
+                        </div>
+                        <div className="col-md-1 col-2 text-right">
+                            <button className="float-button">
+                                <div className="float-button-content" style={this.buttonStyle()}>
+                                    <span className="fas fa-chevron-up" style={{ display: this.state.expanded ? 'block' : 'none'}}></span>
+                                    <span className="fas fa-chevron-down" style={{ display: !this.state.expanded ? 'block' : 'none' }}></span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className={`row accordion-content`} style={this.bannerStyle()}>
+                    <div className={`col-md-12 ${this.state.expanded ? 'expanded' : 'collapsed'}`}>
+                        <div>
+                            {this.props.children}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>;
+    }
+}
