@@ -1,0 +1,324 @@
+/// <reference path="homepage.tsx" />
+import * as React from 'react';
+import * as H from 'history'
+import * as ReactGA from 'react-ga';
+import Helmet from 'react-helmet';
+import { BreadcrumbControl, Breadcrumb } from '../components/BreadcrumbControl';
+import { AccordionControl, AccordionOpenControl } from '../components/AccordionControl';
+import { LinkButtonControl } from '../components/LinkButtonControl';
+import { CardControl } from '../components/CardControl';
+import { fail } from 'assert';
+import { CardImageControl } from '../components/CardImageControl';
+import { PanelControl } from '../components/PanelControl';
+import * as LocaStorageContext from '../LocalStorageContext';
+import CompetitorAnalysisPage from '../contentpages/CompetitorAnalysisPage';
+import { LinkControl } from '../components/LinkControl';
+
+
+type moduleStateOption = 'active' | 'inactive';
+
+interface DashboardPageProps {
+    history: H.History
+
+}
+
+
+interface DashboardPageState {
+    expandAll:boolean
+    breadcrumbs: Breadcrumb[]
+    shortlistModuleState: moduleStateOption
+    downloadModuleState: moduleStateOption
+    selectModuleState: moduleStateOption
+    compareModuleState: moduleStateOption
+    nextModuleState: moduleStateOption
+}
+
+
+export default class DashboardPage extends React.Component<DashboardPageProps, DashboardPageState> {
+
+    constructor(props: DashboardPageProps) {
+        super(props);
+
+        this.state = {
+            expandAll: false,
+            breadcrumbs: [
+                { title: 'Find export markets', url: '\\' },
+                { title: 'Dashboard', url: '' },
+            ],
+            downloadModuleState: 'inactive',
+            shortlistModuleState: 'inactive',
+            compareModuleState: 'inactive',
+            selectModuleState: 'inactive',
+            nextModuleState:'inactive'
+        }
+
+    }
+
+    componentDidMount() {
+        document.title = "Dashboard | Find export markets";
+        this.updateCompletedStates();
+    }
+
+    handleOpenAllAccordion=(expandAll: boolean)=> {
+        this.setState({ expandAll: expandAll })
+    }
+
+    updateCompletedStates() {
+        let downloadExcelState = localStorage.getItem(LocaStorageContext.DOWNLOADEXCEL);
+        let marketPotentialState = localStorage.getItem(LocaStorageContext.MARKETPOTENTIAL);
+        let hsCodeState = localStorage.getItem(LocaStorageContext.HSCODE);
+        let marketAttractivenessState = localStorage.getItem(LocaStorageContext.MARKETATTRACTIVENESS);
+        let pestleAnalysisState = localStorage.getItem(LocaStorageContext.PESTLEANALYSIS);
+        let marketSuitabilityState = localStorage.getItem(LocaStorageContext.MARKETSUITABILIITY);
+        let analyseCompetitorState = localStorage.getItem(LocaStorageContext.ANALYSECONPETITORS);
+        let competitveAdvantage = localStorage.getItem(LocaStorageContext.COMPETITVEADVANTAGE);
+
+        let downloadExceStateValue: moduleStateOption = 'inactive';
+        let shortlistModuleStateValue: moduleStateOption = 'inactive';
+        let compareModuleStateValue: moduleStateOption = 'inactive';
+        let selectModuleStateValue: moduleStateOption = 'inactive';
+
+        if (downloadExcelState && downloadExcelState === 'true') {
+            downloadExceStateValue = 'active';
+        }
+
+        if (marketPotentialState && marketPotentialState === 'true' && hsCodeState && hsCodeState === 'true') {
+            shortlistModuleStateValue = 'active';
+        }
+
+        if (marketAttractivenessState && marketAttractivenessState === 'true' && pestleAnalysisState && hsCodeState === 'true') {
+            compareModuleStateValue = 'active';
+        }
+
+        if (marketSuitabilityState && marketSuitabilityState === 'true' &&
+            analyseCompetitorState && analyseCompetitorState === 'true' &&
+            competitveAdvantage && competitveAdvantage === 'true') {
+            selectModuleStateValue = 'active';
+        }
+        this.setState({
+            downloadModuleState: downloadExceStateValue,
+            shortlistModuleState: shortlistModuleStateValue,
+            compareModuleState: compareModuleStateValue,
+            selectModuleState: selectModuleStateValue
+        });
+        
+    }
+
+
+    render() {
+        return <>
+            <Helmet>
+                <meta name="description" content="Dashboard | Find export markets" />
+            </Helmet>
+
+            {this.state.breadcrumbs ? <BreadcrumbControl menus={this.state.breadcrumbs} /> : ''}
+
+            <div className="page-header-theme-blue">
+                <div className="container">
+                    <div className="row">
+                        <div className="col-md-12">
+                            <p>Dashboard</p>
+                            <h1>Let's find out which markets are right for you</h1>
+                            <div className="page-header-dash-left"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="page-header-theme-white">
+                <div className="container">
+
+                    <AccordionOpenControl onChange={this.handleOpenAllAccordion} iconClassName="mt-2 mr-md-4"/>
+
+                    <AccordionControl checkStateVisible={true} title="Download your workbook" expanded={this.state.expandAll} checkboxState={this.state.downloadModuleState}>
+                        <div className="row">
+                            <div className="col-md-12">
+                                <CardImageControl
+                                    category="TEMPLATE"
+                                    heading="You need this for every activity"
+                                    theme="purple"
+                                    className="dashboard-cards"
+                                    cardHeight="273px"
+                                    imageSrc="/images/download-workbook.png"
+                                    imageAtl="">
+                                    <p className="mt-5">Your workbook is a single place to gather your research and select the best markets.​</p>
+                                    <p>Download your workbook.</p>
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <LinkButtonControl href="#" fontAwesomeIconClassname="fas fa-download" primary size="sm" text="Excel" />
+                                        </div>
+                                    </div>
+                                </CardImageControl>
+                            </div>
+                        </div>
+                    </AccordionControl>
+
+                    <AccordionControl checkStateVisible={true} title="Shortlist" expanded={this.state.expandAll} checkboxState={this.state.shortlistModuleState}>
+                        <div className="row">
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Find your HS codes"
+                                    href="/activity/find-hs-codes"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="300px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="5 mins" >
+                                    <p>Before you can look up trade data about your product you need to know your Harmonised System (HS) code.</p>
+                                </CardControl>
+                            </div>
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Check market potential"
+                                    href="/activity/market-potential"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="300px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="45 mins" >
+                                    <p>Rule out markets you can’t access and find potential markets. This is an essential activity to create your first shortlist of 20 or more markets.</p>
+                                </CardControl>
+                            </div>
+                        </div>
+                    </AccordionControl>
+
+                    <AccordionControl checkStateVisible={true} title="Compare" expanded={this.state.expandAll} checkboxState={this.state.compareModuleState}>
+                        <div className="row">
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Identify market suitability"
+                                    href="/activity/market-suitability"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="300px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="90 mins" >
+                                    <p>Learn how to check whether your key products are suitable in your pre-selected markets.</p>
+                                </CardControl>
+                            </div>
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Assess market attractiveness"
+                                    href="/activity/access-market-attractiveness"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="310px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="90 minutes">
+                                        <p>Learn how to check whether your key products are suitable in your pre-selected markets.</p>
+                                </CardControl>
+                            </div>
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Conduct PESTLE analysis"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="310px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="1 hour">
+                                        <p>Learn how to quicly research and rank political economic, social, legal and environmental (PESTLE) factors.</p>
+                                </CardControl>
+                            </div>
+                        </div>
+                    </AccordionControl>
+
+                    <AccordionControl checkStateVisible={true} title="Select" expanded={this.state.expandAll} checkboxState={this.state.selectModuleState}>
+                        <div className="row">
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Analyse your competitors"
+                                    href="/activity/competitor-analysis"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="300px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="2-3 hours" >
+                                        <p>Complete this activity to get a thorough understanding of the competition in each of your pre-selected markets.</p>
+                                </CardControl>
+                            </div>
+                            <div className="col-lg-4 col-md-6 col-xs-12">
+                                <CardControl
+                                    category="ACTIVITY"
+                                    heading="Assess your competitive advantage"
+                                    href="/activity/marketing-mix"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="300px" descriptionPanelHeight="110px"
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="90 mins">
+                                        <p>Set out your '4 P's' - product, price, promotion, placement and compare against your key competitors.</p>
+                                </CardControl>
+                            </div>
+                        </div>
+                    </AccordionControl>
+
+                    <AccordionControl checkStateVisible={true} title="Next steps" expanded={this.state.expandAll} checkboxState="inactive">
+
+                        <div className="row">
+                            <div className="col-md-12">
+                                <h2>Great work!</h2>
+                                <p>Congratulations on completing the 3 steps to selecting a market.</p>
+                                <p>You should have learned a lot and have some good markets in mind.</p>
+                                <p>To help you find opportunities and start exporting, here are a few bonus activities.​</p>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-4">
+                                <PanelControl theme="purple">
+                                    <div className="action-card-category">TEMPLATE</div>
+                                    <h3>Share your findings with your team</h3>
+                                    <p>Make use of an Austrade template to get all your findings out of your workbook and into a compelling presentation.</p>
+                                    <p>Download market selection template​</p>
+                                    <LinkButtonControl href="/data/FTRM Market selection recommendations template.potx" fontAwesomeIconClassname="fas fa-download" primary size="sm" text="PPT" />
+                                </PanelControl>
+                            </div>
+                            <div className="col-md-8">
+                                <CardImageControl
+                                    category="ACTIVITY"
+                                    heading="Find events and build your network"
+                                    href="/activity/events"
+                                    theme="primary"
+                                    className="dashboard-cards"
+                                    cardHeight="381px" 
+                                    imageSrc="/images/find-globe.png"
+                                    imageAtl=""
+                                    bottomPanelFontAwesomeIcon="far fa-clock"
+                                    bottomPanelDescription="30 mins" >
+                                    <p>Enter your selected markets into this tool for a list of food and agriculture events.</p>
+                                </CardImageControl>
+                            </div>
+                        </div>
+                        <br/>
+                        <div className="row">
+                            <div className="col-md-8">
+                                <CardImageControl
+                                    heading="Check if you’re eligible for financial help"
+                                    theme="light-blue"
+                                    className="dashboard-cards"
+                                    cardHeight="273px"
+                                    imageSrc="/images/computer-template.png"
+                                    imageAtl="">
+                                    <p className="mt-5">Aspiring and current exporters can apply for reimbursement of market development expenses.​</p>
+                                    <p>Learn more about <LinkControl href="https://www.austrade.gov.au/Australian/Export/Export-Grants/About/What-is-EMDG/what-is-emdg" externallink text="Austrade’s Export market development grant scheme (EMDG)"/></p>
+                                </CardImageControl>
+                            </div>
+                            <div className="col-md-4">
+                                <PanelControl theme="light-blue">
+                                    <h3>Keep your finger on the pulse</h3>
+                                    <p>Register for the Austrade Food and Agriculture newsletter on the Austrade website.</p>
+                                    <LinkButtonControl href="https://austrade.gov.au/News/newsletters" externallink primary size="sm" text="Register for newsletter" />
+                                </PanelControl>
+                            </div>
+                        </div>
+                    </AccordionControl>
+                </div>
+            </div>
+        </>
+    }
+}
