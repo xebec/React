@@ -1,0 +1,42 @@
+using System.Threading.Tasks;
+using System;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+
+namespace Austrade.SupportFinder.FnApp
+{
+    public class CrmUrlCheckFunction
+    {
+        [FunctionName("CrmUrlCheckFunction")]
+        public static async Task<string> Run([OrchestrationTrigger]DurableOrchestrationContext durableContext, TraceWriter log, ExecutionContext context)
+        {
+            try
+            {
+                ResultRequest request = durableContext.GetInput<ResultRequest>();
+                if (request != null && request.Article != null && request.Article.Content != null)
+                {
+                    
+                    ResultResponse response = await UrlTestUtility.ProcessUrlCheck(request.Article, log);
+                    if (response.NeedsUpdate)
+                    {
+                        IOrganizationService service = await UrlTestUtility.GetOrganisationService(request.Options);
+                        Entity articleEntity = service.Retrieve("knowledgearticle", request.Article.Id, new ColumnSet("content"));
+                        if(articleEntity != null)
+                        {
+                            articleEntity.Attributes["content"] = response.Article.Content;
+                            service.Update(articleEntity);
+                        }
+                    }
+                }
+                return durableContext.InstanceId;
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message + Environment.NewLine + ex.StackTrace);
+                throw ex;
+            }
+        }
+    }
+}
