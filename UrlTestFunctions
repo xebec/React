@@ -1,0 +1,48 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Xrm.Sdk;
+
+namespace Austrade.SupportFinder.FnApp
+{
+    public static class UrlTestFunctions
+    {
+        [FunctionName("UrlTestFunction")]
+        public static async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context, [OrchestrationClient]DurableOrchestrationClient starter)
+        {
+            try
+            {
+                //15 second: */15 * * * * *
+                //15 minutes: 0 */15 * * * *
+                //every midnight: 0 0 0 * * *
+                string environmentName = "lcoal";
+                if (!string.IsNullOrEmpty(Setting.AZURE_FUNCTION_ENVIRONMENT))
+                {
+                    environmentName = Setting.AZURE_FUNCTION_ENVIRONMENT;
+                }
+
+                var options = UrlTestUtility.GetAzureADOptions(environmentName, context.FunctionAppDirectory);
+                IOrganizationService service = await UrlTestUtility.GetOrganisationService(options.Value);
+                EntityCollection articleEntities = UrlTestUtility.GetArticles(service);
+                foreach(Entity articleEntity in articleEntities.Entities)
+                {
+                    string content = articleEntity.Contains("content") ? articleEntity.GetAttributeValue<string>("content") : string.Empty;
+                    string title = articleEntity.Contains("title") ? articleEntity.GetAttributeValue<string>("title") : string.Empty;
+                    Article article = new Article { Id = articleEntity.Id, Content = content, Title = title };
+                    ResultRequest request = new ResultRequest { Article = article, Options = options.Value };
+                    string id = await starter.StartNewAsync("CrmUrlCheckFunction", request);
+                }
+            }
+            catch(Exception ex)
+            {
+                log.Error(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
+            finally
+            {
+                //log.Info($"C# Timer trigger function executed at: {DateTime.Now}");
+            }
+            
+        }
+    }
+}
