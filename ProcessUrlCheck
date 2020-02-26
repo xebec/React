@@ -1,0 +1,198 @@
+using HtmlAgilityPack;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Xrm.Sdk.WebServiceClient;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Austrade.SupportFinder.FnApp
+{
+    public class UrlTestUtility
+    {
+
+        public static async Task<ResultResponse> ProcessUrlCheck(Article article, TraceWriter log)
+        {
+            ResultResponse result = new ResultResponse { Article = article, NeedsUpdate = false };
+            bool needsUpdate = false;
+            string content = article.Content;
+            string title = article.Title;
+            if (!string.IsNullOrEmpty(content))
+            {
+
+                var doc = new HtmlDocument();
+                doc.LoadHtml(content);
+                var linkElements = doc.DocumentNode.SelectNodes("//a");
+
+                if (linkElements != null)
+                {
+                    foreach (HtmlNode node in linkElements)
+                    {
+                        var href = node.Attributes.Cast<HtmlAttribute>().FirstOrDefault(x => x.Name == "href");
+                        if (href.Value.ToLower().StartsWith("mailto:"))
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(AcceptAllCertifications);
+                            //try to invoke Url
+                            var re = (HttpWebRequest)WebRequest.Create(href.Value);
+                            re.Accept = "application/x-ms-application, image/jpeg, application/xaml+xml, image/gif, image/pjpeg, application/x-ms-xbap, application/x-shockwave-flash, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*";
+                            re.UserAgent = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; MDDC)";
+                            re.AllowAutoRedirect = false;
+                            if (!string.IsNullOrEmpty(Setting.DefaultProxyAddress))
+                            {
+                                re.Proxy = WebRequest.GetSystemWebProxy();
+                                re.Proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+                            }
+
+                            string statusCode;
+                            HttpWebResponse response;
+                            var name = node.Attributes.Cast<HtmlAttribute>().FirstOrDefault(x => x.Name == "name");
+                            try
+                            {
+                                //Url is valid
+                                response = (HttpWebResponse)await re.GetResponseAsync();
+                                statusCode = response.StatusCode.ToString();
+                                //link fixed but still has the flag, remove the flag
+                                if (name != null)
+                                {
+                                    needsUpdate = true;
+                                    node.Attributes.Remove(name);
+                                }
+                                //log.Info("Url: " + href.Value + " status code: " + statusCode);
+                            }
+                            catch (WebException ex)
+                            {
+                                //server does not allow these requests.
+                                if (ex.Status.ToString().ToLower() != "serverprotocolviolation")
+                                {
+                                    //Error in invoking Url Successfully therefore report it.
+                                    if (name == null || name.Value != "broken_link")
+                                    {
+                                        needsUpdate = true;
+                                        node.Attributes.Add("name", "broken_link");
+                                    }
+                                    response = (HttpWebResponse)ex.Response;
+                                    statusCode = response.StatusCode.ToString();
+                                    log.Error("Article: " + title + "Href: " + href.Value + " status code: " + statusCode);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error(ex.Message + Environment.NewLine + ex.StackTrace);
+                        }
+
+                    }
+                }
+                if (needsUpdate)
+                {
+                    article.Content = doc.DocumentNode.OuterHtml;
+                    result.NeedsUpdate = true;
+                }
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// To handle non secure sites
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="certification"></param>
+        /// <param name="chain"></param>
+        /// <param name="sslPolicyErrors"></param>
+        /// <returns></returns>
+        private static bool AcceptAllCertifications(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certification, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Set up environment and get Options
+        /// </summary>
+        /// <param name="environmentName"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        public static IOptions<AzureAdOptions> GetAzureADOptions(string environmentName, string outputPath)
+        {
+            var services = new ServiceCollection();
+            // IOption configuration injection 
+            services.AddOptions();
+
+            //configure settings files according to the environment
+            var configurationRoot = Setting.GetIConfigurationRoot(outputPath, environmentName);
+
+            //update AzureADOptions by injecting values from setting files.
+            services.Configure<AzureAdOptions>(configurationRoot.GetSection("AzureAd"));
+            var serviceProvider = services.BuildServiceProvider();
+
+            var options = serviceProvider.GetRequiredService<IOptions<AzureAdOptions>>();
+            return options;
+        }
+
+        /// <summary>
+        /// Get Articles from CRM
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        public static EntityCollection GetArticles(IOrganizationService service)
+        {
+            QueryExpression articlesQuery = new QueryExpression
+            {
+                EntityName = "knowledgearticle",
+                ColumnSet = new ColumnSet("title", "content", "statecode", "minorversionnumber", "majorversionnumber"),
+                Criteria = new FilterExpression
+                {
+                    Conditions =
+                    {
+                        new ConditionExpression
+                        {
+                            AttributeName = "statecode",
+                            Operator = ConditionOperator.Equal,
+                            Values = { 3 } //Published
+                        }
+                    }
+
+                }
+            };
+
+            EntityCollection articleEntities = service.RetrieveMultiple(articlesQuery);
+            return articleEntities;
+        }
+
+        /// <summary>
+        /// Get CRM Organisation Service
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static async Task<IOrganizationService> GetOrganisationService(AzureAdOptions options)
+        {
+            if (!string.IsNullOrEmpty(Setting.DefaultProxyAddress))
+            {
+                var proxy = new WebProxy(Setting.DefaultProxyAddress, true);
+                proxy.BypassList = new List<string> { Setting.BypassAdderss }.ToArray();
+                WebRequest.DefaultWebProxy = proxy;
+                WebRequest.DefaultWebProxy.Credentials = CredentialCache.DefaultCredentials;
+            }
+
+
+            var sdkService = new OrganizationWebProxyClient(options.GetServiceUri(), false);
+
+            AuthenticationContext authContext = new AuthenticationContext(options.GetAuthority());
+            ClientCredential credential = new ClientCredential(options.ClientId, options.ClientSecret);
+            var result = await authContext.AcquireTokenAsync(options.Resource, credential);
+            sdkService.HeaderToken = result.AccessToken;
+            return sdkService;
+        }
+    }
+}
