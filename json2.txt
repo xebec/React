@@ -1,0 +1,289 @@
+[
+    {
+		    "id": "10000",
+        "name":  "Horticulture",
+        "markets":  [
+                        "Indonesia",
+                        "Japan",
+                        "India"
+                    ],
+        "products":  [
+                         {
+							               "id": "100",
+                             "name":  "Nuts",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         },
+                         {
+							               "id": "105",
+                             "name":  "Table grapes",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         },
+                         {
+							               "id": "110",
+                             "name":  "Citrus",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         },
+                         {
+							               "id": "115",
+                             "name":  "Avocadoes",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         }
+                     ]
+    },
+    {
+		    "id": "10001",
+        "name":  "Agtech",
+        "markets":  [
+                        "Japan",
+                        "India"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10002",
+        "name":  "Asset management",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10003",
+        "name":  "Grains",
+        "markets":  [
+                        "Japan",
+                        "India"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10004",
+        "name":  "Processed foods",
+        "markets":  [
+                        "Japan",
+                        "India",
+                        "Hong Kong (SAR of China)",
+                        "Indonesia"
+                    ],
+        "products":  [
+                         {
+							              "id": "300",
+                             "name":  "Breakfast cereal",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         },
+                         {
+							              "id": "305",
+                             "name":  "Confectionery",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         },
+                         {
+							               "id": "310",
+                             "name":  "Honey",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         },
+                         {
+							               "id": "315",
+                             "name":  "Non-alcoholic beverages",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         }
+                     ]
+    },
+    {
+		    "id": "10005",
+        "name":  "Cybersecurity",
+        "markets":  [
+                        "United Kingdom",
+                        "Japan",
+                        "United States of America",
+                        "Germany",
+                        "France",
+                        "China"
+                    ],
+        "products":  null
+    },
+    {
+		"id": "10006",
+        "name":  "Seafood",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10007",
+        "name":  "Organic foods",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10008",
+        "name":  "Food service",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10009",
+        "name":  "Fintech",
+        "markets":  [
+                        "United Kingdom",
+                        "Israel",
+                        "United States of America",
+                        "Switzerland",
+                        "Germany",
+                        "France",
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10010",
+        "name":  "Legal advisory",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10011",
+        "name":  "Complementary medicine",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  [
+                         {
+							              "id": "400",
+                             "name":  "Supplements",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         }
+                     ]
+    },
+    {
+		    "id": "10012",
+        "name":  "Meat",
+        "markets":  [
+                        "Indonesia",
+                        "Japan"
+                    ],
+        "products":  [
+                         {
+							 "id": "500",
+                             "name":  "Beef",
+                             "markets":  [
+                                             "Indonesia"
+                                         ]
+                         }
+                     ]
+    },
+    {
+		    "id": "10013",
+        "name":  "Augmented and virtual reality",
+        "markets":  [
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10014",
+        "name":  "Immersive media",
+        "markets":  [
+                        "China"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10015",
+        "name":  "Enterprise Technology",
+        "markets":  [
+                        "United States of America"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10016",
+        "name":  "Alcoholic beverages",
+        "markets":  [
+                        "India",
+                        "Japan"
+                    ],
+        "products":  [
+                         {
+							               "id":"600",
+                             "name":  "Wine",
+                             "markets":  [
+                                             "India",
+                                             "Japan"
+                                         ]
+                         },
+                         {
+                            "id":"605",
+                            "name":  "Beer",
+                             "markets":  [
+                                             "Japan"
+                                         ]
+                         }
+                     ]
+    },
+    {
+		    "id": "10017",
+        "name":  "Envirotech",
+        "markets":  [
+                        "Israel"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10018",
+        "name":  "eCommerce",
+        "markets":  [
+                        "China",
+                        "Japan"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10019",
+        "name":  "Aged care",
+        "markets":  [
+                        "China"
+                    ],
+        "products":  null
+    },
+    {
+		    "id": "10020",
+        "name":  "Foodtech",
+        "markets":  [
+                        "Japan"
+                    ],
+      "products": [
+        {
+          "id": "700",
+          "name": "Alternative proteins",
+          "markets": [
+            "Japan"
+          ]
+        }
+      ]
+    }
+]
